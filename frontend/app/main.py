@@ -66,8 +66,32 @@ def generar_pdf():
         elements.append(Paragraph(f'Teléfono: {factura["cliente"]["telefono"]}', normal_style))
         elements.append(Spacer(1, 6 * mm))
 
-        # TODO: Adicionar el Detalle de la Factura: cantidad, descripción, precio unitario y total
+        # Adicionar el Detalle de la Factura: cantidad, descripción, precio unitario y total
+        detalle_data = [[
+            'Cantidad',
+            'Descripción',
+            'Precio unitario',
+            'Total'
+        ]]
+        for item in factura['detalle']:
+            detalle_data.append([
+                str(item['cantidad']),
+                item['descripcion'],
+                f'€ {item["precio_unitario"]:.2f}',
+                f'€ {item["total"]:.2f}'
+            ])
 
+        detalle_tabla = Table(detalle_data, colWidths=[30 * mm, 85 * mm, 35 * mm, 35 * mm], hAlign='LEFT')
+        detalle_tabla.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#d3d3d3')),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.black),
+            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+            ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
+            ('BOTTOMPADDING', (0, 0), (-1, 0), 6),
+            ('TOPPADDING', (0, 0), (-1, 0), 6),
+        ]))
+        elements.append(detalle_tabla)
+        elements.append(Spacer(1, 6 * mm))
 
         # TODO: Adicionar Subtotal, impuesto y Total
 
