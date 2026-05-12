@@ -93,8 +93,22 @@ def generar_pdf():
         elements.append(detalle_tabla)
         elements.append(Spacer(1, 6 * mm))
 
-        # TODO: Adicionar Subtotal, impuesto y Total
-
+        # Adicionar Subtotal, impuesto y Total
+        totales_data = [
+            ['Subtotal', f'€ {factura["subtotal"]:.2f}'],
+            ['Impuesto (21%)', f'€ {factura["impuesto"]:.2f}'],
+            ['Total', f'€ {factura["total"]:.2f}'],
+        ]
+        totales_tabla = Table(totales_data, colWidths=[120 * mm, 65 * mm], hAlign='RIGHT')
+        totales_tabla.setStyle(TableStyle([
+            ('ALIGN', (0, 0), (-1, -1), 'RIGHT'),
+            ('TEXTCOLOR', (0, 0), (-1, -2), colors.black),
+            ('TEXTCOLOR', (0, -1), (-1, -1), colors.black),
+            ('FONTSIZE', (0, 0), (-1, -1), 10),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
+        ]))
+        elements.append(totales_tabla)
+        elements.append(Spacer(1, 4 * mm))
 
         # Generar el doc y limpiar el buffer
         doc.build(elements)
