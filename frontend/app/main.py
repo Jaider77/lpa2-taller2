@@ -58,8 +58,13 @@ def generar_pdf():
         elements.append(Paragraph(f'Email: {factura["empresa"]["email"]}', normal_style))
         elements.append(Spacer(1, 6 * mm))
 
-        # TODO: Agregar Información del Cliente
-
+        # Agregar Información del Cliente
+        elements.append(Paragraph('Información del cliente', header_style))
+        elements.append(Spacer(1, 2 * mm))
+        elements.append(Paragraph(f'Nombre: {factura["cliente"]["nombre"]}', normal_style))
+        elements.append(Paragraph(f'Dirección: {factura["cliente"]["direccion"]}', normal_style))
+        elements.append(Paragraph(f'Teléfono: {factura["cliente"]["telefono"]}', normal_style))
+        elements.append(Spacer(1, 6 * mm))
 
         # TODO: Adicionar el Detalle de la Factura: cantidad, descripción, precio unitario y total
 
