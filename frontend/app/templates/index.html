@@ -9,23 +9,24 @@
 <body>
     <div class="container">
         <h1>Generador de Facturas PDF</h1>
-        <form method="POST" action="/generar-pdf">
+        <form id="factura-form" method="POST" action="/generar-pdf">
             <div class="form-group">
                 <label for="id_factura">ID de Factura:</label>
                 <input type="text" id="id_factura" name="id_factura" required>
             </div>
             <button type="submit">Generar PDF</button>
         </form>
-        
-        {% with messages = get_flashed_messages() %}
-            {% if messages %}
-                <div class="alert">
-                    {% for message in messages %}
-                        <p>{{ message }}</p>
-                    {% endfor %}
-                </div>
-            {% endif %}
-        {% endwith %}
+
+        <div class="alert" id="preview-error" style="display:none;"></div>
+
+        <div id="preview-container" class="preview-container" style="display:none;">
+            <div class="preview-actions">
+                <h2>Vista previa de la factura</h2>
+                <a id="download-link" class="download-link" href="#" target="_blank">Descargar PDF</a>
+            </div>
+            <iframe id="pdf-preview" class="pdf-preview" title="Vista previa PDF"></iframe>
+        </div>
     </div>
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
 </body>
 </html>
