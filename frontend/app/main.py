@@ -43,8 +43,12 @@ def generar_pdf():
         elements = []
 
         # Adicionar el Título, ID
+        elements.append(Paragraph('Factura', title_style))
+        elements.append(Spacer(1, 4 * mm))
+        elements.append(Paragraph(f'Número de factura: {factura["numero_factura"]}', normal_style))
+        elements.append(Paragraph(f'Fecha de emisión: {factura["fecha_emision"]}', normal_style))
+        elements.append(Spacer(1, 6 * mm))
 
-        
         # TODO: Agregar Información de la Empresa
 
 
