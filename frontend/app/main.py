@@ -114,9 +114,13 @@ def generar_pdf():
         doc.build(elements)
         buffer.seek(0)
         
-        # TODO: Retornar a la página el PDF para visualizar y descargar
-
-        
+        # Retornar a la página el PDF para visualizar y descargar
+        return send_file(
+            buffer,
+            mimetype='application/pdf',
+            as_attachment=True,
+            download_name=f'factura_{id_factura}.pdf'
+        )
     except requests.exceptions.ConnectionError:
         abort(503, description="Error de conexión con el servidor")
     except Exception as e:
