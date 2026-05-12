@@ -9,7 +9,7 @@ from io import BytesIO
 import os
 
 app = Flask(__name__)
-BACKEND_URL = os.getenv('BACKEND_URL', 'http://backend:8000')
+BACKEND_URL = os.getenv('BACKEND_URL') or os.getenv('BACKEND_API_URL', 'http://backend:8000')
 
 @app.route('/')
 def index():
@@ -26,10 +26,23 @@ def generar_pdf():
             
         factura = response.json()
         
-        # TODO: Crear buffer y doc para la creación del PDF
-        
+        # Crear buffer y doc para la creación del PDF
+        buffer = BytesIO()
+        doc = SimpleDocTemplate(
+            buffer,
+            pagesize=A4,
+            rightMargin=20 * mm,
+            leftMargin=20 * mm,
+            topMargin=20 * mm,
+            bottomMargin=20 * mm,
+        )
+        styles = getSampleStyleSheet()
+        title_style = styles['Title']
+        normal_style = styles['Normal']
+        header_style = styles['Heading2']
+        elements = []
 
-        # TODO: Adicionar el Título, ID
+        # Adicionar el Título, ID
 
         
         # TODO: Agregar Información de la Empresa
