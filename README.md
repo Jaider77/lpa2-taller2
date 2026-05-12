@@ -4,7 +4,8 @@ Sistema completo de generación de facturas, utilizando [FastAPI](https://fastap
 
 ## Autor
 
-- Nombre del Estudiante - @perfil_de_github
+Jaider Francisco Asprilla Ryeyes 
+https://github.com/Jaider77/lpa2-taller2
 
 ## Descripción del Proyecto
 
