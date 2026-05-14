@@ -204,15 +204,22 @@ button:active {
 .pdf-preview {
     width: 100%;
     min-height: 700px;
+    height: 700px;
     border: 2px solid var(--border-color);
     border-radius: 12px;
     background: var(--bg-white);
     box-shadow: var(--shadow-md);
-    transition: all 0.3s ease;
+    transition: var(--transition);
+    display: block;
+    margin: 0;
+    padding: 0;
+    visibility: visible;
+    opacity: 1;
 }
 
 .pdf-preview:hover {
     box-shadow: var(--shadow-lg);
+    border-color: var(--primary-color);
 }
 
 /* ========================================

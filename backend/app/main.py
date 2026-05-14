@@ -6,6 +6,11 @@ app = FastAPI(title="API de Facturas Fake", version="1.0")
 
 fake = Faker("es_ES")
 
+@app.get("/")
+def health_check():
+    """Endpoint de verificación de salud - Healthcheck"""
+    return {"status": "ok", "message": "API de Facturas funcionando correctamente"}
+
 @app.get("/facturas/v1/{numero_factura}")
 def get_factura(numero_factura: str):
     # Generar datos falsos para empresa y cliente

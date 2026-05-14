@@ -3,30 +3,92 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Generador de Facturas</title>
+    <meta name="description" content="Generador de Facturas PDF Profesional">
+    <title>Generador de Facturas PDF</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        .nav-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e5e7eb;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .nav-links a {
+            text-decoration: none;
+            color: #2563eb;
+            font-weight: 500;
+            padding: 8px 16px;
+            border-radius: 4px;
+            transition: all 0.3s;
+        }
+        
+        .nav-links a:hover {
+            background: #f0f9ff;
+            color: #1d4ed8;
+        }
+    </style>
 </head>
 <body>
     <div class="container">
-        <h1>Generador de Facturas PDF</h1>
+        <div class="nav-bar">
+            <h1 style="margin: 0;">Generador de Facturas PDF</h1>
+            <div class="nav-links">
+                <a href="/" title="Generar nueva factura">📄 Generar</a>
+                <a href="/historial" title="Ver historial de descargas">📋 Historial</a>
+            </div>
+        </div>
+        
+        <p style="text-align: center; color: #6b7280; margin-bottom: 30px;">
+            Genera facturas profesionales de forma rápida y sencilla
+        </p>
+
         <form id="factura-form" method="POST" action="/generar-pdf">
             <div class="form-group">
                 <label for="id_factura">ID de Factura:</label>
-                <input type="text" id="id_factura" name="id_factura" required>
+                <input 
+                    type="text" 
+                    id="id_factura" 
+                    name="id_factura" 
+                    placeholder="Ingrese el número de factura"
+                    required
+                    autocomplete="off"
+                >
             </div>
+
             <button type="submit">Generar PDF</button>
         </form>
 
-        <div class="alert" id="preview-error" style="display:none;"></div>
+        <div class="alert alert-error" id="preview-error" style="display:none;"></div>
+        <div class="alert alert-success" id="preview-success" style="display:none;"></div>
 
         <div id="preview-container" class="preview-container" style="display:none;">
             <div class="preview-actions">
-                <h2>Vista previa de la factura</h2>
-                <a id="download-link" class="download-link" href="#" target="_blank">Descargar PDF</a>
+                <h2>Vista Previa de la Factura</h2>
+                <div class="action-buttons">
+                    <a id="download-link" class="download-link" href="#" download>
+                        Descargar PDF
+                    </a>
+                    <button type="button" class="print-link" id="print-btn">
+                        Imprimir
+                    </button>
+                </div>
             </div>
-            <iframe id="pdf-preview" class="pdf-preview" title="Vista previa PDF"></iframe>
+            <iframe 
+                id="pdf-preview" 
+                class="pdf-preview" 
+                title="Vista previa PDF"
+            ></iframe>
         </div>
     </div>
+
     <script src="{{ url_for('static', filename='js/app.js') }}"></script>
 </body>
 </html>

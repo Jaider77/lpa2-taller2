@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Historial de Descargas de Facturas">
+    <title>Historial de Descargas</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        .historial-container {
+            background: #f9fafb;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        
+        .resumen-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            padding: 15px;
+            text-align: center;
+        }
+        
+        .stat-card .number {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2563eb;
+        }
+        
+        .stat-card .label {
+            color: #6b7280;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+        
+        .descargas-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 6px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .descargas-table thead {
+            background: #2563eb;
+            color: white;
+        }
+        
+        .descargas-table th {
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+        }
+        
+        .descargas-table td {
+            padding: 12px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .descargas-table tbody tr:hover {
+            background: #f0f9ff;
+        }
+        
+        .estado-exitosa {
+            background: #d1fae5;
+            color: #065f46;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .estado-error {
+            background: #fee2e2;
+            color: #991b1b;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .acciones {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .btn-descargar {
+            background: #2563eb;
+            color: white;
+        }
+        
+        .btn-descargar:hover {
+            background: #1d4ed8;
+        }
+        
+        .btn-excel {
+            background: #10b981;
+            color: white;
+        }
+        
+        .btn-excel:hover {
+            background: #059669;
+        }
+        
+        .filtros {
+            background: white;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .filtros input {
+            padding: 8px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #6b7280;
+        }
+        
+        .error-msg {
+            background: #fee2e2;
+            color: #991b1b;
+            padding: 12px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+        }
+        
+        .no-data {
+            text-align: center;
+            padding: 40px;
+            color: #9ca3af;
+        }
+        
+        .nav-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e5e7eb;
+        }
+        
+        .nav-tab {
+            padding: 10px 20px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            color: #6b7280;
+            border-bottom: 3px solid transparent;
+        }
+        
+        .nav-tab.active {
+            color: #2563eb;
+            border-bottom-color: #2563eb;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📋 Historial de Descargas</h1>
+        <p style="text-align: center; color: #6b7280; margin-bottom: 30px;">
+            Consulta el registro completo de facturas descargadas
+        </p>
+
+        <!-- Tabs de navegación -->
+        <div class="nav-tabs">
+            <button class="nav-tab active" onclick="mostrarTab('resumen')">📊 Resumen</button>
+            <button class="nav-tab" onclick="mostrarTab('historial')">📝 Historial Completo</button>
+        </div>
+
+        <!-- Tab Resumen -->
+        <div id="resumen-tab" class="tab-content">
+            <div id="resumen-content" class="loading">Cargando estadísticas...</div>
+        </div>
+
+        <!-- Tab Historial -->
+        <div id="historial-tab" class="tab-content" style="display:none;">
+            <div class="filtros">
+                <input type="text" id="buscar-factura" placeholder="Buscar por ID de factura..." style="flex: 1;">
+                <button class="btn-excel" onclick="exportarExcel()">📊 Exportar a Excel</button>
+            </div>
+            <div id="historial-content" class="loading">Cargando historial...</div>
+        </div>
+    </div>
+
+    <script>
+        // Variables globales
+        let resumenData = null;
+        let historialData = null;
+
+        // Cambiar entre tabs
+        function mostrarTab(tabName) {
+            // Ocultar todos los tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.style.display = 'none';
+            });
+            
+            // Mostrar el tab seleccionado
+            document.getElementById(tabName + '-tab').style.display = 'block';
+            
+            // Actualizar botones
+            document.querySelectorAll('.nav-tab').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Cargar datos si es la primera vez
+            if (tabName === 'resumen' && !resumenData) {
+                cargarResumen();
+            } else if (tabName === 'historial' && !historialData) {
+                cargarHistorial();
+            }
+        }
+
+        // Cargar resumen estadístico
+        function cargarResumen() {
+            fetch('/api/resumen')
+                .then(res => res.json())
+                .then(data => {
+                    resumenData = data;
+                    if (data.success) {
+                        const resumen = data.resumen;
+                        const html = `
+                            <div class="resumen-stats">
+                                <div class="stat-card">
+                                    <div class="number">${resumen.total_descargas}</div>
+                                    <div class="label">Total de Descargas</div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="number">${resumen.descargas_exitosas}</div>
+                                    <div class="label">Descargas Exitosas</div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="number">${resumen.descargas_con_error}</div>
+                                    <div class="label">Descargas con Error</div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="number">${resumen.facturas_unicas}</div>
+                                    <div class="label">Facturas Únicas</div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="number">${resumen.ips_unicas}</div>
+                                    <div class="label">IPs Únicas</div>
+                                </div>
+                            </div>
+                            <p style="text-align: right; color: #9ca3af; font-size: 12px;">
+                                Última actualización: ${new Date(resumen.ultima_actualizacion).toLocaleString()}
+                            </p>
+                        `;
+                        document.getElementById('resumen-content').innerHTML = html;
+                    } else {
+                        document.getElementById('resumen-content').innerHTML = '<div class="error-msg">Error al cargar el resumen</div>';
+                    }
+                })
+                .catch(err => {
+                    document.getElementById('resumen-content').innerHTML = '<div class="error-msg">Error de conexión</div>';
+                });
+        }
+
+        // Cargar historial completo
+        function cargarHistorial() {
+            fetch('/api/historial')
+                .then(res => res.json())
+                .then(data => {
+                    historialData = data;
+                    if (data.success && data.descargas.length > 0) {
+                        mostrarHistorial(data.descargas);
+                    } else if (data.descargas && data.descargas.length === 0) {
+                        document.getElementById('historial-content').innerHTML = '<div class="no-data">📭 No hay descargas registradas aún</div>';
+                    } else {
+                        document.getElementById('historial-content').innerHTML = '<div class="error-msg">Error al cargar el historial</div>';
+                    }
+                })
+                .catch(err => {
+                    document.getElementById('historial-content').innerHTML = '<div class="error-msg">Error de conexión</div>';
+                });
+        }
+
+        // Mostrar tabla de historial
+        function mostrarHistorial(descargas) {
+            let html = `
+                <table class="descargas-table">
+                    <thead>
+                        <tr>
+                            <th>ID Factura</th>
+                            <th>Fecha y Hora</th>
+                            <th>IP Cliente</th>
+                            <th>Empresa</th>
+                            <th>Cliente</th>
+                            <th>Monto</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            descargas.forEach(desc => {
+                const fecha = new Date(desc.fecha_hora).toLocaleString();
+                const estado = `<span class="estado-${desc.estado}">${desc.estado.toUpperCase()}</span>`;
+                const monto = desc.detalles && desc.detalles.total ? `€${desc.detalles.total.toFixed(2)}` : 'N/A';
+                const empresa = desc.detalles && desc.detalles.empresa ? desc.detalles.empresa : 'N/A';
+                const cliente = desc.detalles && desc.detalles.cliente ? desc.detalles.cliente : 'N/A';
+                
+                html += `
+                    <tr>
+                        <td><strong>${desc.id_factura}</strong></td>
+                        <td>${fecha}</td>
+                        <td><code>${desc.ip_cliente}</code></td>
+                        <td>${empresa}</td>
+                        <td>${cliente}</td>
+                        <td>${monto}</td>
+                        <td>${estado}</td>
+                    </tr>
+                `;
+            });
+            
+            html += `
+                    </tbody>
+                </table>
+            `;
+            
+            document.getElementById('historial-content').innerHTML = html;
+        }
+
+        // Buscar factura
+        document.addEventListener('DOMContentLoaded', function() {
+            const input = document.getElementById('buscar-factura');
+            if (input) {
+                input.addEventListener('keyup', function() {
+                    const término = this.value.toLowerCase();
+                    if (historialData && historialData.descargas) {
+                        const filtrados = historialData.descargas.filter(desc => 
+                            desc.id_factura.toLowerCase().includes(término)
+                        );
+                        mostrarHistorial(filtrados);
+                    }
+                });
+            }
+            
+            // Cargar resumen por defecto
+            cargarResumen();
+        });
+
+        // Exportar a Excel
+        function exportarExcel() {
+            if (!historialData || !historialData.descargas) {
+                alert('No hay datos para exportar');
+                return;
+            }
+
+            let csv = 'ID Factura,Fecha y Hora,IP Cliente,Empresa,Cliente,Monto,Estado\n';
+            
+            historialData.descargas.forEach(desc => {
+                const fecha = new Date(desc.fecha_hora).toLocaleString();
+                const monto = desc.detalles && desc.detalles.total ? desc.detalles.total : 'N/A';
+                const empresa = desc.detalles && desc.detalles.empresa ? desc.detalles.empresa : 'N/A';
+                const cliente = desc.detalles && desc.detalles.cliente ? desc.detalles.cliente : 'N/A';
+                
+                csv += `"${desc.id_factura}","${fecha}","${desc.ip_cliente}","${empresa}","${cliente}","${monto}","${desc.estado}"\n`;
+            });
+            
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `historial_descargas_${new Date().toISOString().slice(0,10)}.csv`;
+            a.click();
+        }
+    </script>
+</body>
+</html>
